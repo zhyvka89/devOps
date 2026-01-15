@@ -9,3 +9,7 @@ output "public_subnets" {
 output "private_subnets" {
   value = module.vpc.private_subnets_ids
 }
+
+output "ecr_repository_url" {
+  value = module.ecr.repository_url
+}

@@ -43,4 +43,8 @@ module "vpc" {
     "eu-central-1c"
   ]
 }
-# module "ecr" {}
+module "ecr" {
+  source = "./modules/ecr"
+
+  repository_name = "lesson-5-app"
+}
