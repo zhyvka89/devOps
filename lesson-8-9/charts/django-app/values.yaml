@@ -1,0 +1,31 @@
+image:
+  repository: 387867038969.dkr.ecr.eu-central-1.amazonaws.com/django-app
+  tag: v1
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+env:
+  DJANGO_DEBUG: "False"
+  DJANGO_SECRET_KEY: "django_pass"
+  DJANGO_ALLOWED_HOSTS: "*"
+  DATABASE_URL: "postgres://django_user:django_pass@db:5432/django_db"
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
