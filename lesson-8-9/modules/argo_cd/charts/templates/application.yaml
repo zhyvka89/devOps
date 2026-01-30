@@ -8,7 +8,7 @@ spec:
 
   source:
     repoURL: https://github.com/zhyvka89/devOps.git
-    targetRevision: main
+    targetRevision: lesson-8-9
     path: charts/django-app
 
   destination:
