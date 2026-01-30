@@ -16,3 +16,14 @@ variable "chart_version" {
   default     = "5.46.4" 
 }
 
+variable "cluster_name" {
+  type = string
+}
+
+variable "cluster_endpoint" {
+  type = string
+}
+
+variable "cluster_ca" {
+  type = string
+}

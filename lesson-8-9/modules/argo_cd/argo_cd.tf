@@ -18,6 +18,9 @@ resource "helm_release" "argo_apps" {
   namespace  = var.namespace
   create_namespace = false
 
+  timeout = 900
+  wait    = true
+
   values = [
     file("${path.module}/values.yaml")
   ]

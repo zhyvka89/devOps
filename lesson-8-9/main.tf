@@ -13,21 +13,21 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-data "aws_eks_cluster" "this" {
-  name = "lesson-8-9-eks"
-}
+#data "aws_eks_cluster" "this" {
+#  name = "lesson-8-9-eks"
+#}
 
-data "aws_eks_cluster_auth" "this" {
-  name = "lesson-8-9-eks"
-}
+#data "aws_eks_cluster_auth" "this" {
+#  name = "lesson-8-9-eks"
+#}
 
-provider "helm" {
-  kubernetes = {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
-    token                  = data.aws_eks_cluster_auth.this.token
-  }
-}
+#provider "helm" {
+#  kubernetes = {
+#    host                   = module.eks.cluster_endpoint
+#    cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
+#    token                  = data.aws_eks_cluster_auth.this.token
+#  }
+#}
 
 # Модулі будуть підключені на наступних кроках
 module "s3_backend" {
@@ -80,6 +80,8 @@ module "eks" {
 module "jenkins" {
   source = "./modules/jenkins"
   cluster_name = module.eks.cluster_name
+  cluster_endpoint = module.eks.cluster_endpoint
+  cluster_ca       = module.eks.cluster_ca
 
   kubeconfig = "C:/Users/Comp100/.kube/config"
 
@@ -93,4 +95,8 @@ module "argo_cd" {
   source       = "./modules/argo_cd"
   namespace    = "argocd"
   chart_version = "5.46.4"
+
+  cluster_name     = module.eks.cluster_name
+  cluster_endpoint = module.eks.cluster_endpoint
+  cluster_ca       = module.eks.cluster_ca
 }

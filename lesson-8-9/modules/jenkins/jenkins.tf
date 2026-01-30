@@ -83,6 +83,9 @@ resource "helm_release" "jenkins" {
   version          = "5.8.27"
   create_namespace = true
 
+  timeout = 900
+  wait    = true
+
   values = [
     file("${path.module}/values.yaml")
   ]
