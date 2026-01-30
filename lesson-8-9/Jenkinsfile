@@ -60,17 +60,20 @@ spec:
         container('git') {
           withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PAT')]) {
             sh '''
+              rm -rf devOps
               git clone https://$GIT_USERNAME:$GIT_PAT@github.com/zhyvka89/devOps.git
-              cd goit-devops/django-chart
+              cd devOps
 
-              sed -i "s/tag: .*/tag: $IMAGE_TAG/" values.yaml
+              git checkout lesson-8-9
+
+              sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" charts/django-app/values.yaml
 
               git config user.email "$COMMIT_EMAIL"
               git config user.name "$COMMIT_NAME"
 
-              git add values.yaml
-              git commit -m "Update image tag to $IMAGE_TAG"
-              git push origin main
+              git add charts/django-app/values.yaml
+              git commit -m "ci: update image tag to ${IMAGE_TAG}"
+              git push origin lesson-8-9
             '''
           }
         }
