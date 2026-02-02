@@ -13,22 +13,6 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-#data "aws_eks_cluster" "this" {
-#  name = "lesson-8-9-eks"
-#}
-
-#data "aws_eks_cluster_auth" "this" {
-#  name = "lesson-8-9-eks"
-#}
-
-#provider "helm" {
-#  kubernetes = {
-#    host                   = module.eks.cluster_endpoint
-#    cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
-#    token                  = data.aws_eks_cluster_auth.this.token
-#  }
-#}
-
 # Модулі будуть підключені на наступних кроках
 module "s3_backend" {
   source = "./modules/s3-backend"
@@ -99,4 +83,22 @@ module "argo_cd" {
   cluster_name     = module.eks.cluster_name
   cluster_endpoint = module.eks.cluster_endpoint
   cluster_ca       = module.eks.cluster_ca
+}
+
+module "rds" {
+  source = "./modules/rds"
+
+  name            = "app-db"
+  use_aurora      = true
+
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.private_subnets
+
+  db_name         = "app"
+  username        = "admin"
+  password        = "password123"
+
+  engine          = "aurora-postgresql"
+  engine_version  = "13.7"
+  instance_class  = "db.t3.medium"
 }
