@@ -1,125 +1,136 @@
-# Lesson 8–9: CI/CD with Jenkins, Helm, Terraform and Argo CD
+# Terraform RDS Module
 
-## Опис проєкту
+Універсальний Terraform-модуль для створення AWS RDS instance або Amazon Aurora Cluster залежно від параметра `use_aurora`.
 
-Цей проєкт демонструє повний CI/CD-процес у Kubernetes (AWS EKS) з використанням:
+Модуль автоматично створює:
 
-- **Terraform** — для створення інфраструктури
-- **Helm** — для встановлення Jenkins та Argo CD
-- **Jenkins** — для CI (build + push Docker image)
-- **Amazon ECR** — для зберігання Docker-образів
-- **Argo CD** — для GitOps-деплою в Kubernetes
+- DB Subnet Group
 
----
+- Security Group
 
-## Структура проєкту
+- Parameter Group (для RDS або Aurora)
 
-```
-lesson-8-9/
-├── main.tf
-├── backend.tf
-├── outputs.tf
-├── modules/
-│ ├── s3-backend/
-│ ├── vpc/
-│ ├── ecr/
-│ ├── eks/
-│ ├── jenkins/
-│ └── argo_cd/
-├── charts/
-│ └── django-app/
-```
+- RDS Instance або Aurora Cluster + Writer instance
 
-##  Як застосувати Terraform
 
-### 1. Ініціалізація Terraform
+## Приклад використання
 
 ```bash
-terraform init -reconfigure
+module "rds" {
+  source = "./modules/rds"
+
+  name       = "app-db"
+  use_aurora = true
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+
+  db_name  = "app"
+  username = "admin"
+  password = "password123"
+
+  engine         = "aurora-postgresql"
+  engine_version = "13.7"
+  instance_class = "db.t3.medium"
+  multi_az       = false
+}
 ```
 
-### 2. Перевірка плану
+
+## Змінні модуля
+
+| Назва                 | Тип            | Опис                                                                           |
+| --------------------- | -------------- | ------------------------------------------------------------------------------ |
+| `use_aurora`          | `bool`         | Якщо `true` — створюється Aurora Cluster, якщо `false` — звичайна RDS instance |
+| `name`                | `string`       | Базове ім’я для всіх ресурсів БД                                               |
+| `vpc_id`              | `string`       | ID VPC, у якій створюється база даних                                          |
+| `subnet_ids`          | `list(string)` | Список приватних підмереж для DB Subnet Group                                  |
+| `db_name`             | `string`       | Назва бази даних                                                               |
+| `username`            | `string`       | Master username для БД                                                         |
+| `password`            | `string`       | Пароль користувача БД                                                          |
+| `engine`              | `string`       | Тип engine (наприклад: `postgres`, `aurora-postgresql`, `mysql`)               |
+| `engine_version`      | `string`       | Версія engine                                                                  |
+| `instance_class`      | `string`       | Клас інстансу БД (наприклад: `db.t3.micro`, `db.r6g.large`)                    |
+| `multi_az`            | `bool`         | Увімкнення Multi-AZ для звичайної RDS                                          |
+| `allowed_cidr_blocks` | `list(string)` | CIDR-блоки, яким дозволений доступ до БД                                       |
+
+
+
+## Зміна типу БД
+
+### Звичайна RDS instance
 
 ```bash
-terraform plan
+use_aurora = false
+engine     = "postgres"
 ```
 
-### 3. Застосування
+Результат:
+
+- `aws_db_instance`
+
+- `aws_db_parameter_group`
+
+### Aurora Cluster
 
 ```bash
-terraform apply
+use_aurora = true
+engine     = "aurora-postgresql"
 ```
 
-## Як перевірити Jenkins
+Результат:
 
-### 1. Перевірити namespace
+- `aws_rds_cluster`
+
+- `aws_rds_cluster_instance`
+
+- `aws_rds_cluster_parameter_group`
+
+
+## Зміна engine та версії
 
 ```bash
-kubectl get ns | findstr jenkins
+engine         = "aurora-mysql"
+engine_version = "8.0.mysql_aurora.3.04.1"
 ```
 
-### 2. Перевірити поди Jenkins
+або
 
 ```bash
-kubectl get pods -n jenkins
+engine         = "postgres"
+engine_version = "14.5"
 ```
 
-### 3. Отримати адресу Jenkins
+
+## Зміна класу інстансу
 
 ```bash
-kubectl get svc -n jenkins
+instance_class = "db.t3.micro"
 ```
 
-У колонці EXTERNAL-IP буде URL Jenkins.
+Популярні приклади:
 
-### 4. Jenkins pipeline
+- `db.t3.micro` — тестове середовище
 
-Pipeline реалізований через **Jenkinsfile** та виконує:
+- `db.r6g.large` — production
 
-- Збірку Docker-образу Django
-
-- Пуш образу в Amazon ECR
-
-- Оновлення values.yaml Helm-чарту
-
-- Пуш змін у гілку main
-
-Для перевірки:
-
-- Відкрити Jenkins UI
-
-- Запустити job
-
-- Переконатися, що build завершився успішно
+- `db.m5.large` — універсальний варіант
 
 
-## Як побачити результат в Argo CD
+## Outputs
 
-### 1. Перевірити namespace Argo CD
+| Назва               | Опис                                   |
+| ------------------- | -------------------------------------- |
+| `endpoint`          | Endpoint для підключення до бази даних |
+| `security_group_id` | ID Security Group бази даних           |
 
-```bash
-kubectl get ns | findstr argocd
-```
 
-### 2. Перевірити поди
+## Особливості модуля
 
-```bash
-kubectl get pods -n argocd
-```
+- Умовне створення ресурсів через `use_aurora`
 
-### 3. Отримати Argo CD URL
+- Мінімальна кількість змінних
 
-```bash
-kubectl get svc -n argocd
-```
+- Багаторазове використання
 
-### 4. Логін в Argo CD
-
-Логін:
-**username**: admin
-**password**: 
-
-```bash
-kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
-```
-
+- Підходить для `dev`, `stage`, `prod`
