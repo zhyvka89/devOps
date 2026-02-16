@@ -1,4 +1,4 @@
-Terraform AWS Infrastructure
+# Terraform AWS Infrastructure
 
 Цей проєкт демонструє побудову базової AWS-інфраструктури за допомогою Terraform з використанням модульного підходу.
 
