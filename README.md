@@ -6,6 +6,12 @@
 - Remote backend для Terraform state (S3 + DynamoDB)
 - Мережеву інфраструктуру (VPC, public/private subnets, NAT Gateway)
 - ECR (Elastic Container Registry) для зберігання Docker-образів
+- EKS для Kubernetes кластера (EKS + Node Group)
+- AWS RDS instance або Amazon Aurora Cluster залежно від параметра `use_aurora` 
+- Helm для встановлення Jenkins та Argo CD
+- Jenkins для CI (build + push Docker image)
+- Argo CD — для GitOps-деплою в Kubernetes
+- Grafana для моніторингу метрик
 
 ---
 
