@@ -10,7 +10,7 @@
 - AWS RDS instance або Amazon Aurora Cluster залежно від параметра `use_aurora` 
 - Helm для встановлення Jenkins та Argo CD
 - Jenkins для CI (build + push Docker image)
-- Argo CD — для GitOps-деплою в Kubernetes
+- Argo CD для GitOps-деплою в Kubernetes
 - Grafana для моніторингу метрик
 
 ---
