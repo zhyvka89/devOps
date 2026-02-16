@@ -77,7 +77,7 @@ Project/
 │    ├── Chart.yaml
 │    └── values.yaml   # ConfigMap зі змінними середовища
 ├──Django
-│			 ├── app\
+│			 ├── core\
 │			 ├── Dockerfile
 │			 ├── Jenkinsfile
 │      ├── manage.py
@@ -116,6 +116,13 @@ Project/
 
 
 ## 🐳 Docker та ECR
+
+### Отримання ECR URL та логін
+
+```bash
+terraform output -raw ecr_repository_url
+aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin <registry-id>.dkr.ecr.eu-central-1.amazonaws.com
+```
 
 ### Збірка Docker-образу Django
 
@@ -232,4 +239,10 @@ kubectl get svc -n argocd
 
 ```bash
 kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
+```
+
+## Моніторинг та перевірка метрик в Grafana
+
+```bash
+kubectl port-forward svc/grafana 3000:80 -n monitoring
 ```
